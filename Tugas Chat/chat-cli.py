@@ -1,3 +1,5 @@
+import base64
+import logging
 import socket
 import os
 import json
@@ -32,6 +34,15 @@ class ChatClient:
                 for w in j[2:]:
                    message="{} {}" . format(message,w)
                 return self.sendgroupmessage(groupto,message)
+            elif (command=='send_file'):
+                usernameto = j[1].strip()
+                filename = j[2].strip()
+                return self.sendfile(usernameto,filename)
+            elif (command=='my_file'):
+                return self.myfile()
+            elif (command=='download_file'):
+                filename = j[1].strip()
+                return self.downloadfile(filename)
             elif (command=='inbox'):
                 return self.inbox()
             else:
@@ -79,6 +90,42 @@ class ChatClient:
         result = self.sendstring(string)
         if result['status']=='OK':
             return "message sent to {}" . format(groupto)
+        else:
+            return "Error, {}" . format(result['message'])
+    def sendfile(self, usernameto, filename):
+        if(self.tokenid==""):
+            return "Error, not authorized"
+        try :
+            file = open(filename, "rb")
+        except FileNotFoundError :
+            return "Error, {} file not found".format(filename)
+        buffer = file.read()
+        buffer_string = base64.b64encode(buffer).decode('utf-8')
+        message="send_file {} {} {} {} \r\n" .format(self.tokenid, usernameto, filename, buffer_string)
+        result = self.sendstring(message)
+        if result['status']=='OK':
+            return "file {} sent to {}" . format(filename, usernameto)
+        else:
+            return "Error, {}" . format(result['message'])
+    def myfile(self):
+        if (self.tokenid==""):
+            return "Error, not authorized"
+        string="my_file {} \r\n" . format(self.tokenid)
+        result = self.sendstring(string)
+        if result['status']=='OK':
+            return "{}" . format(json.dumps(result['messages']))
+        else:
+            return "Error, {}" . format(result['message'])
+    def downloadfile(self, filename):
+        if (self.tokenid==""):
+            return "Error, not authorized"
+        string="download_file {} {} \r\n" . format(self.tokenid, filename)
+        result = self.sendstring(string)
+        if result['status']=='OK':
+            output_file = open(result['filename'], 'wb')
+            output_file.write(base64.b64decode(result['data']))
+            output_file.close()
+            return "{}" . format(json.dumps(result['messages']))
         else:
             return "Error, {}" . format(result['message'])
     def inbox(self):
