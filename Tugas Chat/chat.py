@@ -65,10 +65,11 @@ class Chat:
 				return self.my_file(sessionid, username)
 			elif (command=='download_file'):
 				sessionid = j[1].strip()
-				filename = j[2].strip()
+				usernameto = j[2].strip()
+				filename = j[3].strip()
 				logging.warning("DOWNLOAD: session {} file {}" . format(sessionid, filename))
 				username = self.sessions[sessionid]['username']
-				return self.download_file(sessionid, username, filename)
+				return self.download_file(sessionid, username, usernameto, filename)
 			else:
 				return {'status': 'ERROR', 'message': '**Protocol Tidak Benar'}
 		except KeyError:
@@ -155,8 +156,17 @@ class Chat:
 		if (s_fr==False or s_to==False):
 			return {'status': 'ERROR', 'message': 'User Tidak Ditemukan'}
 
-		s_to['files'][filename] = message
-		s_fr['files'][filename] = message
+		try : 
+			s_to['files'][username_from][filename] = message
+		except KeyError:
+			s_to['files'][username_from] = {}
+			s_to['files'][username_from][filename] = message
+
+		try : 
+			s_fr['files'][username_dest][filename] = message
+		except KeyError:
+			s_fr['files'][username_dest] = {}
+			s_fr['files'][username_dest][filename] = message
 
 		return {'status': 'OK', 'message': 'File Sent'}
 	def my_file(self, sessionid, username):
@@ -164,17 +174,21 @@ class Chat:
 			return {'status': 'ERROR', 'message': 'Session Tidak Ditemukan'}
 		s_usr = self.get_user(username)
 		files = s_usr['files']
-		msgs = []
-		for file in files:
-			msgs.append(file)
+		msgs = {}
+		for user in files:
+			msgs[user] = []
+			for file in files[user] :
+				msgs[user].append(file)
 		return {'status': 'OK', 'messages': msgs}
-	def download_file(self, sessionid, username, filename):
+	def download_file(self, sessionid, username, usernameto, filename):
 		if (sessionid not in self.sessions):
 			return {'status': 'ERROR', 'message': 'Session Tidak Ditemukan'}
 		s_usr = self.get_user(username)
-		if filename not in s_usr['files']:
+		if(usernameto not in s_usr['files']):
 			return {'status': 'ERROR', 'message': 'File Tidak Ditemukan'}
-		data = s_usr['files'][filename]
+		if filename not in s_usr['files'][usernameto]:
+			return {'status': 'ERROR', 'message': 'File Tidak Ditemukan'}
+		data = s_usr['files'][usernameto][filename]
 		return {'status': 'OK', 'messages': f'Downloaded {filename}', 'filename':f'{filename}', 'data':f'{data}'}
 
 	def get_inbox(self,username):

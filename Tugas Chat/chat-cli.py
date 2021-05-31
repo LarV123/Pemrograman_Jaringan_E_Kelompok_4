@@ -41,8 +41,9 @@ class ChatClient:
             elif (command=='my_file'):
                 return self.myfile()
             elif (command=='download_file'):
-                filename = j[1].strip()
-                return self.downloadfile(filename)
+                username = j[1].strip()
+                filename = j[2].strip()
+                return self.downloadfile(username, filename)
             elif (command=='inbox'):
                 return self.inbox()
             else:
@@ -116,10 +117,10 @@ class ChatClient:
             return "{}" . format(json.dumps(result['messages']))
         else:
             return "Error, {}" . format(result['message'])
-    def downloadfile(self, filename):
+    def downloadfile(self, username, filename):
         if (self.tokenid==""):
             return "Error, not authorized"
-        string="download_file {} {} \r\n" . format(self.tokenid, filename)
+        string="download_file {} {} {} \r\n" . format(self.tokenid, username, filename)
         result = self.sendstring(string)
         if result['status']=='OK':
             output_file = open(result['filename'], 'wb')
