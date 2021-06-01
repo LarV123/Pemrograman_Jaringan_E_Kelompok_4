@@ -21,7 +21,8 @@ class ChatClient:
             if (command=='auth'):
                 username=j[1].strip()
                 password=j[2].strip()
-                return self.login(username,password)
+                response = self.login(username,password)
+                return response
             elif (command=='send'):
                 usernameto = j[1].strip()
                 message=""
@@ -70,9 +71,9 @@ class ChatClient:
         result = self.sendstring(string)
         if result['status']=='OK':
             self.tokenid=result['tokenid']
-            return "username {} logged in, token {} " .format(username,self.tokenid)
+            return { 'status' : 'OK', 'message' : 'Logged In', 'username':username, 'token':self.tokenid}
         else:
-            return "Error, {}" . format(result['message'])
+            return { 'status' : 'ERROR', 'message' : 'Wrong Password or Username'}
     def sendmessage(self,usernameto="xxx",message="xxx"):
         if (self.tokenid==""):
             return "Error, not authorized"
@@ -138,8 +139,6 @@ class ChatClient:
             return "{}" . format(json.dumps(result['messages']))
         else:
             return "Error, {}" . format(result['message'])
-
-
 
 if __name__=="__main__":
     cc = ChatClient()
