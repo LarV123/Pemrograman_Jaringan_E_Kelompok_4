@@ -13,6 +13,7 @@ class ChatClient:
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.server_address = (TARGET_IP,TARGET_PORT)
         self.sock.connect(self.server_address)
+        self.username=""
         self.tokenid=""
     def proses(self,cmdline):
         j=cmdline.split(" ")
@@ -71,6 +72,7 @@ class ChatClient:
         result = self.sendstring(string)
         if result['status']=='OK':
             self.tokenid=result['tokenid']
+            self.username = username
             return { 'status' : 'OK', 'message' : 'Logged In', 'username':username, 'token':self.tokenid}
         else:
             return { 'status' : 'ERROR', 'message' : 'Wrong Password or Username'}
