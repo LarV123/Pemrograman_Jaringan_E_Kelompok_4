@@ -90,12 +90,15 @@ class ChatView(QWidget):
         self.tabs.resize(600, 500)
         users = ["messi", "lineker", "henderson", "group1"]
         self.inboxThread = InboxChatThread()
+        self.fileThread = InboxFileThread()
         for user in users :
             if cc.username != user :
                 chatPanel = ChatPanel(user)
                 self.tabs.addTab(chatPanel, user)
                 self.inboxThread.addNewChat(user, chatPanel)
+                self.fileThread.addNewChat(user, chatPanel)
         self.inboxThread.start()
+        self.fileThread.start()
 
 
 class InboxChatThread(threading.Thread):
@@ -111,12 +114,32 @@ class InboxChatThread(threading.Thread):
             while isCCused and isRunning:
                 time.sleep(0.1)
             isCCused = True
-            newMessages = json.loads(cc.proses(f"inbox {cc.username}"))
+            newMessages = json.loads(cc.proses(f"inbox"))
             isCCused = False
             for user in newMessages :
                 if(len(newMessages[user]) != 0):
                     for message in newMessages[user]:
                         self.userDict[user].addChat(message['msg_from'], message['msg'][2:-4])
+            time.sleep(1)
+
+class InboxFileThread(threading.Thread):
+    def __init__(self):
+        self.userDict = {}
+        threading.Thread.__init__(self)
+    def addNewChat(self, username, chatpanel):
+        self.userDict[username] = chatpanel
+    def run(self):
+        global isRunning
+        global isCCused
+        while isRunning:
+            while isCCused and isRunning:
+                time.sleep(0.1)
+            isCCused = True
+            files = json.loads(cc.proses(f"my_file"))
+            isCCused = False
+            for user in files :
+                for file in files[user]:
+                    self.userDict[user].addFile(file)
             time.sleep(1)
 
 
@@ -126,6 +149,7 @@ class ChatPanel(QWidget):
         self.view = parent
         self.username = username
         self.isAddingChat = False
+        self.isAddingFile = False
         self.initUI()
 
     def initUI(self):
@@ -137,6 +161,12 @@ class ChatPanel(QWidget):
         self.isAddingChat = True
         print(f"{name} : {message}")
         self.isAddingChat = False
+    def addFile(self, filename):
+        while self.isAddingChat:
+            time.sleep(0.1)
+        self.isAddingFile = True
+        print(f"{filename}")
+        self.isAddingFile = False
         
 
 class MainWindow(QMainWindow):
