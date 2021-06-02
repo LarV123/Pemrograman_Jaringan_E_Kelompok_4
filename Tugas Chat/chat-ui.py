@@ -109,7 +109,7 @@ class InboxChatThread(threading.Thread):
         global isCCused
         while isRunning:
             while isCCused and isRunning:
-                time.sleep(1)
+                time.sleep(0.1)
             isCCused = True
             newMessages = json.loads(cc.proses(f"inbox {cc.username}"))
             isCCused = False
@@ -118,7 +118,7 @@ class InboxChatThread(threading.Thread):
                     for message in newMessages[user]:
                         self.userDict[user].addChat(message['msg_from'], message['msg'][2:-4])
             time.sleep(1)
-    
+
 
 class ChatPanel(QWidget):
     def __init__(self, username, parent=None):
