@@ -83,9 +83,9 @@ class ChatClient:
         print(string)
         result = self.sendstring(string)
         if result['status']=='OK':
-            return "message sent to {}" . format(usernameto)
+            return {'status' : 'OK', 'message':'message sent to {}' . format(usernameto)}
         else:
-            return "Error, {}" . format(result['message'])
+            return {'status':'ERROR', 'message':'Error, {}' . format(result['message'])}
     def sendgroupmessage(self,groupto="xxx",message="xxx"):
         if (self.tokenid==""):
             return "Error, not authorized"
@@ -93,9 +93,9 @@ class ChatClient:
         print(string)
         result = self.sendstring(string)
         if result['status']=='OK':
-            return "message sent to {}" . format(groupto)
+            return {'status' : 'OK', 'message':'message sent to {}' . format(groupto)}
         else:
-            return "Error, {}" . format(result['message'])
+            return {'status':'ERROR', 'message':'Error, {}' . format(result['message'])}
     def sendfile(self, usernameto, filename):
         if(self.tokenid==""):
             return "Error, not authorized"
@@ -108,9 +108,9 @@ class ChatClient:
         message="send_file {} {} {} {} \r\n" .format(self.tokenid, usernameto, filename, buffer_string)
         result = self.sendstring(message)
         if result['status']=='OK':
-            return "file {} sent to {}" . format(filename, usernameto)
+            return {'status' : 'OK', 'message':'file sent to {}' . format(usernameto)}
         else:
-            return "Error, {}" . format(result['message'])
+            return {'status':'ERROR', 'message':'Error, {}' . format(result['message'])}
     def myfile(self):
         if (self.tokenid==""):
             return "Error, not authorized"
@@ -119,7 +119,7 @@ class ChatClient:
         if result['status']=='OK':
             return "{}" . format(json.dumps(result['messages']))
         else:
-            return "Error, {}" . format(result['message'])
+            return {'status':'ERROR', 'message':'Error, {}' . format(result['message'])}
     def downloadfile(self, username, filename):
         if (self.tokenid==""):
             return "Error, not authorized"
@@ -129,9 +129,9 @@ class ChatClient:
             output_file = open(result['filename'], 'wb')
             output_file.write(base64.b64decode(result['data']))
             output_file.close()
-            return "{}" . format(json.dumps(result['messages']))
+            return {'status' : 'OK', 'message':'file {} downloaded' . format(filename)}
         else:
-            return "Error, {}" . format(result['message'])
+            return {'status':'ERROR', 'message':'Error, {}' . format(result['message'])}
     def inbox(self):
         if (self.tokenid==""):
             return "Error, not authorized"
@@ -140,7 +140,7 @@ class ChatClient:
         if result['status']=='OK':
             return "{}" . format(json.dumps(result['messages']))
         else:
-            return "Error, {}" . format(result['message'])
+            return {'status':'ERROR', 'message':'Error, {}' . format(result['message'])}
 
 if __name__=="__main__":
     cc = ChatClient()
