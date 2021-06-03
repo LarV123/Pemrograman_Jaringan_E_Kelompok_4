@@ -153,24 +153,27 @@ class ChatPanel(QWidget):
         self.initUI()
 
     def initUI(self):
-        ribbon = QTextEdit()
-        chat = QTextEdit()
-        sendBtn = QPushButton('Send')
-        chat.setFixedHeight(
-            (chat.fontMetrics().lineSpacing()*3) +
-            (chat.document().documentMargin()*2) +
-            (chat.frameWidth()*2) - 1
+        self.ribbon = QTextEdit()
+        self.chat = QTextEdit()
+        self.fileBox = QTextEdit()
+        self.sendChatBtn = QPushButton('Send')
+        self.sendFileBtn = QPushButton('Send File')
+        self.chat.setFixedHeight(
+            (self.chat.fontMetrics().lineSpacing()*3) +
+            (self.chat.document().documentMargin()*2) +
+            (self.chat.frameWidth()*2) - 1
         )
-
-        policy = sendBtn.sizePolicy()
+        self.chat.setFixedWidth(400)
+        policy = self.sendChatBtn.sizePolicy()
         policy.setVerticalPolicy(QSizePolicy.MinimumExpanding)
-        sendBtn.setSizePolicy(policy)
-
+        self.sendChatBtn.setSizePolicy(policy)
         grid = QGridLayout()
         grid.setSpacing(3)
-        grid.addWidget(ribbon, 0,0,1,3)
-        grid.addWidget(chat, 1,0,1,1)
-        grid.addWidget(sendBtn, 1,2)
+        grid.addWidget(self.ribbon, 0,0,2,1)
+        grid.addWidget(self.fileBox, 0,2,1,1)
+        grid.addWidget(self.chat, 2,0,1,1)
+        grid.addWidget(self.sendChatBtn, 2,2,1,1)
+        grid.addWidget(self.sendFileBtn, 1,2,1,1)
         grid.setRowStretch(0,1)
         grid.setColumnStretch(0,1)
 
