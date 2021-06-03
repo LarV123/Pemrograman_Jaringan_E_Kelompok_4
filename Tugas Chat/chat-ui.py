@@ -153,7 +153,29 @@ class ChatPanel(QWidget):
         self.initUI()
 
     def initUI(self):
-        self.textbox = QTextEdit(self)
+        ribbon = QTextEdit()
+        chat = QTextEdit()
+        sendBtn = QPushButton('Send')
+        chat.setFixedHeight(
+            (chat.fontMetrics().lineSpacing()*3) +
+            (chat.document().documentMargin()*2) +
+            (chat.frameWidth()*2) - 1
+        )
+
+        policy = sendBtn.sizePolicy()
+        policy.setVerticalPolicy(QSizePolicy.MinimumExpanding)
+        sendBtn.setSizePolicy(policy)
+
+        grid = QGridLayout()
+        grid.setSpacing(3)
+        grid.addWidget(ribbon, 0,0,1,3)
+        grid.addWidget(chat, 1,0,1,1)
+        grid.addWidget(sendBtn, 1,2)
+        grid.setRowStretch(0,1)
+        grid.setColumnStretch(0,1)
+
+        self.setLayout(grid)
+
 
     def addChat(self, name, message):
         while self.isAddingChat:
