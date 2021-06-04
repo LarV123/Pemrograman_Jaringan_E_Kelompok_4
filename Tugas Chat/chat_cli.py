@@ -40,6 +40,10 @@ class ChatClient:
                 usernameto = j[1].strip()
                 filename = j[2].strip()
                 return self.sendfile(usernameto,filename)
+            elif (command=='send_group_file'):
+                groupto = j[1].strip()
+                filename = j[2].strip()
+                return self.sendgroupfile(groupto,filename)
             elif (command=='my_file'):
                 return self.myfile()
             elif (command=='download_file'):
@@ -109,6 +113,21 @@ class ChatClient:
         result = self.sendstring(message)
         if result['status']=='OK':
             return {'status' : 'OK', 'message':'file sent to {}' . format(usernameto)}
+        else:
+            return {'status':'ERROR', 'message':'Error, {}' . format(result['message'])}
+    def sendgroupfile(self, groupto, filename):
+        if(self.tokenid==""):
+            return "Error, not authorized"
+        try :
+            file = open(filename, "rb")
+        except FileNotFoundError :
+            return "Error, {} file not found".format(filename)
+        buffer = file.read()
+        buffer_string = base64.b64encode(buffer).decode('utf-8')
+        message="send_group_file {} {} {} {} \r\n" .format(self.tokenid, groupto, filename, buffer_string)
+        result = self.sendstring(message)
+        if result['status']=='OK':
+            return {'status' : 'OK', 'message':'file sent to group {}' . format(groupto)}
         else:
             return {'status':'ERROR', 'message':'Error, {}' . format(result['message'])}
     def myfile(self):

@@ -58,6 +58,16 @@ class Chat:
 				usernamefrom = self.sessions[sessionid]['username']
 				logging.warning("SEND: session {} send file {} from {} to {} with data {}" . format(sessionid, filename, usernamefrom, usernameto, message))
 				return self.send_file(sessionid,usernamefrom,usernameto,filename,message)
+			elif (command=='send_group_file'):
+				sessionid = j[1].strip()
+				groupto = j[2].strip()
+				filename = j[3].strip()
+				message=""
+				for w in j[4:-1]:
+					message="{}{}" . format(message,w)
+				usernamefrom = self.sessions[sessionid]['username']
+				logging.warning("SEND: session {} send file {} from {} to group {} with data {}" . format(sessionid, filename, usernamefrom, groupto, message))
+				return self.send_group_file(sessionid, usernamefrom, groupto, filename, message)
 			elif (command=='my_file'):
 				sessionid = j[1].strip()
 				logging.warning("FILES: session {}" . format(sessionid))
@@ -167,6 +177,34 @@ class Chat:
 		except KeyError:
 			s_fr['files'][username_dest] = {}
 			s_fr['files'][username_dest][filename] = message
+
+		return {'status': 'OK', 'message': 'File Sent'}
+	def send_group_file(self, sessionid, username_from, group_dest, filename, message):
+		if (sessionid not in self.sessions):
+			return {'status': 'ERROR', 'message': 'Session Tidak Ditemukan'}
+		s_fr = self.get_user(username_from)
+		s_gr = self.get_group(group_dest)
+		if (s_fr==False):
+			return {'status': 'ERROR', 'message': 'User Tidak Ditemukan'}
+		if (s_gr==False):
+			return {'status': 'ERROR', 'message': 'Group Tidak Ditemukan'}
+
+		try : 
+			s_fr['files'][group_dest][filename] = message
+		except KeyError:
+			s_fr['files'][group_dest] = {}
+			s_fr['files'][group_dest][filename] = message
+
+		for member in s_gr['member']:
+			s_to = self.get_user(member)
+			if(s_to==False):
+				continue
+			try : 
+				s_to['files'][group_dest][filename] = message
+			except KeyError:
+				s_to['files'][group_dest] = {}
+				s_to['files'][group_dest][filename] = message
+			
 
 		return {'status': 'OK', 'message': 'File Sent'}
 	def my_file(self, sessionid, username):

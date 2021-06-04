@@ -88,7 +88,8 @@ class ChatView(QWidget):
     def initUI(self):
         self.tabs = QTabWidget(self)
         self.tabs.resize(600, 500)
-        users = ["messi", "lineker", "henderson", "group1"]
+        users = ["messi", "lineker", "henderson"]
+        groups = ["group1"]
         self.inboxThread = InboxChatThread()
         self.fileThread = InboxFileThread()
         for user in users :
@@ -97,6 +98,12 @@ class ChatView(QWidget):
                 self.tabs.addTab(chatPanel, user)
                 self.inboxThread.addNewChat(user, chatPanel)
                 self.fileThread.addNewChat(user, chatPanel)
+        for group in groups :
+            chatPanel = ChatPanel(group, True)
+            self.tabs.addTab(chatPanel, group)
+            self.inboxThread.addNewChat(group, chatPanel)
+            self.fileThread.addNewChat(group, chatPanel)
+
         self.inboxThread.start()
         self.fileThread.start()
 
@@ -144,12 +151,13 @@ class InboxFileThread(threading.Thread):
 
 
 class ChatPanel(QWidget):
-    def __init__(self, username, parent=None):
+    def __init__(self, username, isGroup=False, parent=None):
         super(ChatPanel, self).__init__(parent)
         self.view = parent
         self.username = username
         self.isAddingChat = False
         self.isAddingFile = False
+        self.isGroup = isGroup
         self.initUI()
 
     def initUI(self):
@@ -178,7 +186,8 @@ class ChatPanel(QWidget):
         grid.setColumnStretch(0,1)
 
         self.setLayout(grid)
-
+    # pake isGroup untuk ngecek apakah ini group atau tidak
+    # command send chat
 
     def addChat(self, name, message):
         while self.isAddingChat:
