@@ -155,7 +155,7 @@ class ChatPanel(QWidget):
     def initUI(self):
         self.ribbon = QTextEdit()
         self.chat = QTextEdit()
-        self.fileBox = QTextEdit()
+        self.fileBox = QListWidget()
         self.sendChatBtn = QPushButton('Send')
         self.sendFileBtn = QPushButton('Send File')
         self.chat.setFixedHeight(
