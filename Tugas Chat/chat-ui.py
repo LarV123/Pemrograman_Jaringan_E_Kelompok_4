@@ -187,7 +187,8 @@ class ChatPanel(QWidget):
 
         self.setLayout(grid)
     # pake isGroup untuk ngecek apakah ini group atau tidak
-    # command send chat
+    # command send untuk group menggunakan command send_group
+    # command send_file untuk group menggunakan command send_group_file
 
     def addChat(self, name, message):
         while self.isAddingChat:
