@@ -1,3 +1,4 @@
+from socket import AddressFamily
 import sys
 import threading
 from chat_cli import ChatClient
@@ -8,10 +9,24 @@ import json
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
+import os
 
 cc = None
-isCCused = False
 isRunning = False
+
+class ChatMutex :
+    def __init__(self):
+        self.cc = ChatClient()
+        self.isUsed = False
+    def proses(self, message):
+        while(self.isUsed and isRunning):
+            time.sleep(0.1)
+        self.isUsed = True
+        response = self.cc.proses(message)
+        self.isUsed = False
+        return response
+    def username(self):
+        return self.cc.username
 
 class LoginView(QWidget):
 
@@ -93,7 +108,7 @@ class ChatView(QWidget):
         self.inboxThread = InboxChatThread()
         self.fileThread = InboxFileThread()
         for user in users :
-            if cc.username != user :
+            if cc.username() != user :
                 chatPanel = ChatPanel(user)
                 self.tabs.addTab(chatPanel, user)
                 self.inboxThread.addNewChat(user, chatPanel)
@@ -116,13 +131,8 @@ class InboxChatThread(threading.Thread):
         self.userDict[username] = chatpanel
     def run(self):
         global isRunning
-        global isCCused
         while isRunning:
-            while isCCused and isRunning:
-                time.sleep(0.1)
-            isCCused = True
             newMessages = json.loads(cc.proses(f"inbox"))
-            isCCused = False
             for user in newMessages :
                 if(len(newMessages[user]) != 0):
                     for message in newMessages[user]:
@@ -137,13 +147,8 @@ class InboxFileThread(threading.Thread):
         self.userDict[username] = chatpanel
     def run(self):
         global isRunning
-        global isCCused
         while isRunning:
-            while isCCused and isRunning:
-                time.sleep(0.1)
-            isCCused = True
             files = json.loads(cc.proses(f"my_file"))
-            isCCused = False
             for user in files :
                 for file in files[user]:
                     self.userDict[user].addFile(file)
@@ -158,14 +163,17 @@ class ChatPanel(QWidget):
         self.isAddingChat = False
         self.isAddingFile = False
         self.isGroup = isGroup
+        self.files = []
         self.initUI()
 
     def initUI(self):
         self.ribbon = QTextEdit()
         self.chat = QTextEdit()
         self.fileBox = QListWidget()
+        self.fileBox.itemDoubleClicked.connect(self.downloadFile)
         self.sendChatBtn = QPushButton('Send')
         self.sendFileBtn = QPushButton('Send File')
+        self.sendFileBtn.clicked.connect(self.sendFile)
         self.chat.setFixedHeight(
             (self.chat.fontMetrics().lineSpacing()*3) +
             (self.chat.document().documentMargin()*2) +
@@ -189,6 +197,13 @@ class ChatPanel(QWidget):
     # pake isGroup untuk ngecek apakah ini group atau tidak
     # command send untuk group menggunakan command send_group
     # command send_file untuk group menggunakan command send_group_file
+    def sendFile(self):
+        dialogFile = FileDialog(self.username, self.isGroup)
+        dialogFile.exec_()
+
+    def downloadFile(self, item):
+        global cc
+        cc.proses(f"download_file {self.username} {item.text()}")
 
     def addChat(self, name, message):
         while self.isAddingChat:
@@ -200,9 +215,47 @@ class ChatPanel(QWidget):
         while self.isAddingChat:
             time.sleep(0.1)
         self.isAddingFile = True
-        print(f"{filename}")
+        if(filename not in self.files):
+            self.files.append(filename)
+            self.fileBox.addItem(filename)
         self.isAddingFile = False
         
+class FileDialog(QDialog):
+    def __init__(self, username, isGroup=False):
+        super(FileDialog, self).__init__()
+        self.username = username
+        self.isGroup = isGroup
+        self.initUI()
+    def initUI(self):
+        self.fileBox = QListWidget(self)
+        self.fileBox.resize(400, 250)
+        self.setFixedSize(400, 300)
+        self.setWindowTitle("Send File")
+        self.sendFileBtn = QPushButton('Send File')
+        self.sendFileBtn.clicked.connect(self.send_file)
+        grid = QGridLayout()
+        grid.addWidget(self.fileBox, 0, 0, 3, 3)
+        grid.addWidget(self.sendFileBtn, 4, 1, 1, 1)
+        grid.setRowStretch(0,1)
+        grid.setColumnStretch(0,1)
+        self.setLayout(grid)
+    def send_file(self):
+        filename = self.fileBox.currentItem().text()
+        global cc
+        if(self.isGroup):
+            cc.proses(f"send_group_file {self.username} {filename}")
+        else:
+            cc.proses(f"send_file {self.username} {filename}")
+    def exec_(self):
+        self.fileBox.clear()
+        files = [f for f in os.listdir('.') if os.path.isfile(f)]
+        for f in files:
+            self.fileBox.addItem(f)
+        self.fileBox.setCurrentRow(0)
+        super(FileDialog, self).exec_()
+        
+
+    
 
 class MainWindow(QMainWindow):
     def __init__(self, parent=None):
@@ -223,7 +276,7 @@ class MainWindow(QMainWindow):
         msg.setWindowTitle("Error")
         global cc
         try:
-            cc = ChatClient()
+            cc = ChatMutex()
         except ConnectionError:
             msg.exec_()
             exit()
