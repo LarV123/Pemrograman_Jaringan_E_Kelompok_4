@@ -168,10 +168,12 @@ class ChatPanel(QWidget):
 
     def initUI(self):
         self.ribbon = QTextEdit()
+        self.ribbon.setReadOnly(True)
         self.chat = QTextEdit()
         self.fileBox = QListWidget()
         self.fileBox.itemDoubleClicked.connect(self.downloadFile)
         self.sendChatBtn = QPushButton('Send')
+        self.sendChatBtn.clicked.connect(self.sendmessage)
         self.sendFileBtn = QPushButton('Send File')
         self.sendFileBtn.clicked.connect(self.sendFile)
         self.chat.setFixedHeight(
@@ -197,6 +199,24 @@ class ChatPanel(QWidget):
     # pake isGroup untuk ngecek apakah ini group atau tidak
     # command send untuk group menggunakan command send_group
     # command send_file untuk group menggunakan command send_group_file
+    
+    def sendmessage(self):
+        global cc
+        self.newchat = self.chat.toPlainText()
+
+        if(self.isGroup):
+            cc.proses(f"send_group {self.username} {self.newchat}")
+        else:
+            cc.proses(f"send {self.username} {self.newchat}")
+
+        # cc.proses(f"send {self.username} {self.newchat}")
+        self.namechat = QTextEdit()
+        self.namechat.setText("You: " + self.newchat)
+        self.addchat = self.namechat.toPlainText()
+        self.chat.setText("")
+        # self.ribbon.setText(self.addchat) 
+        self.ribbon.append(self.addchat)
+
     def sendFile(self):
         dialogFile = FileDialog(self.username, self.isGroup)
         dialogFile.exec_()
@@ -206,11 +226,14 @@ class ChatPanel(QWidget):
         cc.proses(f"download_file {self.username} {item.text()}")
 
     def addChat(self, name, message):
+        global cc
         while self.isAddingChat:
             time.sleep(0.1)
         self.isAddingChat = True
-        self.ribbon.append(f"{name}:{message}")
+        if name != cc.username:
+            self.ribbon.append(f"{name}: {message}")
         self.isAddingChat = False
+
     def addFile(self, filename):
         while self.isAddingChat:
             time.sleep(0.1)
