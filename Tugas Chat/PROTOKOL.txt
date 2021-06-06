@@ -1,0 +1,123 @@
+CHAT
+TUJUAN: melayani client komunikasi pesan dan mengirim file
+
+ATURAN PROTOKOL:
+- client harus mengirimkan request dalam bentuk string
+- string harus dalam format
+  REQUEST spasi PARAMETER
+- PARAMETER dapat berkembang menjadi PARAMETER1 spasi PARAMETER2 dan seterusnya
+- Pengiriman file akan di encode menjadi string base64
+
+REQUEST YANG DILAYANI:
+- informasi umum:
+  * Jika request tidak dikenali akan menghasilkan pesan
+    - status: ERROR
+    - data: request tidak dikenali
+  * Semua result akan diberikan dalam bentuk JSON dan diakhiri
+    dengan character ascii code #13#10#13#10 atau "\r\n\r\n"
+
+AUTH
+* TUJUAN: untuk autentikasi dan token id
+* PARAMETER:
+  - PARAMETER1 : username
+  - PARAMETER2 : password 
+* RESULT:
+- BERHASIL:
+  - status: OK
+  - data: token id
+- GAGAL:
+  - status: ERROR
+  - data: pesan kesalahan
+
+SEND MESSAGE
+* TUJUAN: untuk mengirim pesan ke user lain
+* PARAMETER:
+  - PARAMETER1 : token id
+  - PARAMETER2 : user tujuan
+  - PARAMETER3 : pesan yang akan dikirim
+* RESULT:
+- BERHASIL:
+  - status: OK
+- GAGAL:
+  - status: ERROR
+  - data: pesan kesalahan
+
+SEND GROUP MESSAGE
+* TUJUAN: untuk mengirim pesan ke user lain
+* PARAMETER:
+  - PARAMETER1 : token id
+  - PARAMETER2 : group tujuan
+  - PARAMETER3 : pesan yang akan dikirim
+* RESULT:
+- BERHASIL:
+  - status: OK
+- GAGAL:
+  - status: ERROR
+  - data: pesan kesalahan
+  
+SEND FILE
+* TUJUAN: untuk mengirim pesan ke user lain
+* PARAMETER:
+  - PARAMETER1 : token id
+  - PARAMETER2 : user tujuan
+  - PARAMETER3 : nama file
+  - PARAMETER4 : string base64
+* RESULT:
+- BERHASIL:
+  - status: OK
+- GAGAL:
+  - status: ERROR
+  - data: pesan kesalahan
+  
+SEND GROUP FILE
+* TUJUAN: untuk mengirim pesan ke group
+* PARAMETER:
+  - PARAMETER1 : token id
+  - PARAMETER2 : group tujuan
+  - PARAMETER3 : nama file
+  - PARAMETER4 : string base64
+* RESULT:
+- BERHASIL:
+  - status: OK
+- GAGAL:
+  - status: ERROR
+  - data: pesan kesalahan
+  
+MY FILE
+* TUJUAN: untuk mengirim pesan ke group
+* PARAMETER:
+  - PARAMETER1 : token id
+* RESULT:
+- BERHASIL:
+  - status: OK
+  - data: data json dictionary user ke list of name file, dengan contoh format {'user1':['file1.ext', 'file2.ext'], 'user2':['file1.ext']}
+- GAGAL:
+  - status: ERROR
+  - data: pesan kesalahan
+  
+INBOX
+* TUJUAN: untuk mengirim pesan ke group
+* PARAMETER:
+  - PARAMETER1 : token id
+* RESULT:
+- BERHASIL:
+  - status: OK
+  - data: data json dictionary user ke list pesan, dalam data setiap pesan terdapat nama pengirim, nama penerima dan pesan
+- GAGAL:
+  - status: ERROR
+  - data: pesan kesalahan
+  
+DOWNLOAD FILE
+* TUJUAN: untuk download file dari sebuah user
+* PARAMETER:
+  - PARAMETER1 : token id
+  - PARAMETER2 : username
+  - PARAMETER3 : file name
+* RESULT:
+- BERHASIL:
+  - status: OK
+  - nama file: nama file yang akan didownload
+  - data: data file yang didownload dalam bentuk base64
+- GAGAL:
+  - status: ERROR
+  - data: pesan kesalahan
