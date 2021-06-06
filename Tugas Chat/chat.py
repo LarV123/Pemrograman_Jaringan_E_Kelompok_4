@@ -146,6 +146,8 @@ class Chat:
 			outqueue_sender[username_from].put(message_out)
 
 		for member in s_gr['member']:
+			if(member == username_from):
+				continue
 			s_to = self.get_user(member)
 			if(s_to==False):
 				continue

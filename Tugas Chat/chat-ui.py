@@ -136,7 +136,7 @@ class InboxChatThread(threading.Thread):
             for user in newMessages :
                 if(len(newMessages[user]) != 0):
                     for message in newMessages[user]:
-                        self.userDict[user].addChat(message['msg_from'], message['msg'][2:-4])
+                        self.userDict[user].addChat(message['msg_from'], message['msg'][2:-3])
             time.sleep(1)
 
 class InboxFileThread(threading.Thread):
@@ -209,7 +209,7 @@ class ChatPanel(QWidget):
         while self.isAddingChat:
             time.sleep(0.1)
         self.isAddingChat = True
-        print(f"{name} : {message}")
+        self.ribbon.append(f"{name}:{message}")
         self.isAddingChat = False
     def addFile(self, filename):
         while self.isAddingChat:
