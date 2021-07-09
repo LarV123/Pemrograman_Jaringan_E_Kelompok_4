@@ -70,8 +70,24 @@ class HttpServer:
 		for i in range(0, len(files)):
 			files[i] = Path(files[i])
 		dir=Path('./')
-		return self.response(200,'OK','Default Server',dict())
+		if (object_address == '/'):
+			return self.response(200,'OK','Testing Server 2',dict())
+
+		object_address=object_address[1:]
+		print(dir / object_address)
+		if dir / object_address not in files:
+			return self.response(404,'Not Found','',{})
+		fp = open(dir/object_address,'rb') #rb => artinya adalah read dalam bentuk binary
+		#harus membaca dalam bentuk byte dan BINARY
+		isi = fp.read()
 		
+		fext = os.path.splitext(dir/object_address)[1]
+		content_type = self.types[fext]
+		
+		headers={}
+		headers['Content-type']=content_type
+		
+		return self.response(200,'OK',isi,headers)
 	def http_post(self,object_address,headers):
 		headers ={}
 		isi = "kosong"

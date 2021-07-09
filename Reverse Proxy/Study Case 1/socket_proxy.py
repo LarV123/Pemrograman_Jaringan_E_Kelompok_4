@@ -4,13 +4,12 @@ import threading
 import time
 import sys
 import logging
+from reverse_proxy import ReverseProxy
 
-
+reverseProxy = ReverseProxy()
 
 class ProcessTheClient(threading.Thread):
-	def __init__(self, connection, address, destination_sock_address):
-		self.destination_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-		self.destination_sock.connect(destination_sock_address)
+	def __init__(self, connection, address):
 		self.connection = connection
 		self.address = address
 		threading.Thread.__init__(self)
@@ -20,13 +19,16 @@ class ProcessTheClient(threading.Thread):
 		while True:
 			try:
 				data = self.connection.recv(8192)
+				data = data.decode()
+				self.destination_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 				if data:
-					self.destination_sock.sendall(data)
+					forward_response = reverseProxy.proses(data)
+					self.destination_sock.connect(forward_response['server'])
+					self.destination_sock.sendall(forward_response['request'].encode())
 					data_balasan = self.destination_sock.recv(8192)
 					self.connection.sendall(data_balasan)
-					logging.warning(data)
-					logging.warning(data_balasan)
-
+					# logging.warning(data)
+					# logging.warning(data_balasan)
 				else:
 					break
 			except OSError as e:
@@ -40,8 +42,6 @@ class Server(threading.Thread):
 		self.the_clients = []
 		self.my_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		self.my_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-
-		self.destination_sock_address = ('localhost',8889)
 		threading.Thread.__init__(self)
 
 	def run(self):
@@ -51,7 +51,7 @@ class Server(threading.Thread):
 			self.connection, self.client_address = self.my_socket.accept()
 			logging.warning("connection from {}".format(self.client_address))
 
-			clt = ProcessTheClient(self.connection, self.client_address,self.destination_sock_address)
+			clt = ProcessTheClient(self.connection, self.client_address)
 			clt.start()
 			self.the_clients.append(clt)
 
