@@ -6,9 +6,9 @@ import re
 class ReverseProxy:
 	def __init__(self):
 		self.url_dict = {}
-		self.url_dict['/server1/']=("localhost", 8889)
-		self.url_dict['/server2/']=("localhost", 9000)
-		self.default_server = default_server=("localhost", 8888)
+		self.url_dict['/images/']=("localhost", 8889)
+		self.url_dict['/pdf/']=("localhost", 9000)
+		self.default_server = ("localhost", 8888)
 
 	def proses(self,data):
 
@@ -20,6 +20,9 @@ class ReverseProxy:
 		j = baris.split(" ")
 		method=j[0].upper().strip()
 		url_address = j[1].strip()
+		if(url_address[-1] != '/'):
+			data = data.replace(url_address, url_address+'/')
+			url_address += '/'
 
 		for url, server in self.url_dict.items() :
 			re_match = re.match(url, url_address)
