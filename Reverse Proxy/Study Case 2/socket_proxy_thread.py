@@ -19,14 +19,12 @@ class ProcessTheClient(threading.Thread):
 		while True:
 			try:
 				data = self.connection.recv(8192)
-				# print(data)
-				data = data.decode()
 				self.destination_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 				if data:
-					forward_response = reverseProxy.proses(data)
-					print(f"forwarded to server {forward_response['server']}")
-					self.destination_sock.connect(forward_response['server'])
-					self.destination_sock.sendall(forward_response['request'].encode())
+					server = reverseProxy.get_server()
+					print(f"forwarded to server {server}")
+					self.destination_sock.connect(server)
+					self.destination_sock.sendall(data)
 					data_balasan = self.destination_sock.recv(8192)
 					self.connection.sendall(data_balasan)
 					logging.warning(data)
