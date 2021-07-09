@@ -29,6 +29,7 @@ class ProcessTheClient(threading.Thread):
 					self.connection.sendall(data_balasan)
 					# logging.warning(data)
 					# logging.warning(data_balasan)
+					break
 				else:
 					break
 			except OSError as e:

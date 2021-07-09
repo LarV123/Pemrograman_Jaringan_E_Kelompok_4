@@ -4,13 +4,12 @@ import threading
 import time
 import sys
 import logging
+from load_balancer import LoadBalancer
 
-
+reverseProxy = LoadBalancer()
 
 class ProcessTheClient(threading.Thread):
-	def __init__(self, connection, address, destination_sock_address):
-		self.destination_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-		self.destination_sock.connect(destination_sock_address)
+	def __init__(self, connection, address):
 		self.connection = connection
 		self.address = address
 		threading.Thread.__init__(self)
@@ -20,13 +19,19 @@ class ProcessTheClient(threading.Thread):
 		while True:
 			try:
 				data = self.connection.recv(8192)
+				# print(data)
+				data = data.decode()
+				self.destination_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 				if data:
-					self.destination_sock.sendall(data)
+					forward_response = reverseProxy.proses(data)
+					print(f"forwarded to server {forward_response['server']}")
+					self.destination_sock.connect(forward_response['server'])
+					self.destination_sock.sendall(forward_response['request'].encode())
 					data_balasan = self.destination_sock.recv(8192)
 					self.connection.sendall(data_balasan)
 					logging.warning(data)
 					logging.warning(data_balasan)
-
+					break
 				else:
 					break
 			except OSError as e:
@@ -37,23 +42,19 @@ class ProcessTheClient(threading.Thread):
 
 class Server(threading.Thread):
 	def __init__(self):
-		self.the_clients = []
 		self.my_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		self.my_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-
-		self.destination_sock_address = ('localhost',8889)
 		threading.Thread.__init__(self)
 
 	def run(self):
 		self.my_socket.bind(('0.0.0.0', 18000))
-		self.my_socket.listen(1)
+		self.my_socket.listen(5)
 		while True:
 			self.connection, self.client_address = self.my_socket.accept()
 			logging.warning("connection from {}".format(self.client_address))
 
-			clt = ProcessTheClient(self.connection, self.client_address,self.destination_sock_address)
+			clt = ProcessTheClient(self.connection, self.client_address)
 			clt.start()
-			self.the_clients.append(clt)
 
 
 
