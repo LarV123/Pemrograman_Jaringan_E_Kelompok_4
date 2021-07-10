@@ -48,7 +48,6 @@ class ProcessTheClient(threading.Thread):
 
 class Server(threading.Thread):
 	def __init__(self, port=9000):
-		self.the_clients = []
 		self.my_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		self.my_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 		self.port = port
@@ -62,8 +61,7 @@ class Server(threading.Thread):
 			logging.warning("connection from {}".format(self.client_address))
 
 			clt = ProcessTheClient(self.connection, self.client_address)
-			clt.start()
-			self.the_clients.append(clt)
+			clt.start()	
 
 
 

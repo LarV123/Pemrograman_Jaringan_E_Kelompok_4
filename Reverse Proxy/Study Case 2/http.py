@@ -66,12 +66,12 @@ class HttpServer:
 	def http_get(self,object_address,headers):
 		object_address = unquote(object_address)
 		print(f"ADDRESS : {object_address}")
-		files = glob('./*')
+		files = glob('./*.txt')
 		for i in range(0, len(files)):
 			files[i] = Path(files[i])
 		dir=Path('./')
 		if (object_address == '/'):
-			return self.response(200,'OK','Default Server',dict())
+			return self.response(200,'OK','ini server http',dict())
 
 		object_address=object_address[1:]
 		print(dir / object_address)
