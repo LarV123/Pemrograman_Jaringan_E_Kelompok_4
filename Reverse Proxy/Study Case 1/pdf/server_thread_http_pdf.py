@@ -32,11 +32,11 @@ class ProcessTheClient(threading.Thread):
 						#hasil akan berupa bytes
 						#untuk bisa ditambahi dengan string, maka string harus di encode
 						hasil=hasil+"\r\n\r\n".encode()
-						logging.warning("balas ke  client: {}" . format(hasil))
+						logging.warning("message length : {}".format(len(hasil)))
+						# logging.warning("balas ke  client: {}" . format(hasil))
 						#hasil sudah dalam bentuk bytes
 						self.connection.sendall(hasil)
 						rcv=""
-						self.connection.close()
 				else:
 					break
 			except OSError as e:

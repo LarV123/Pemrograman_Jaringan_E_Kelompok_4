@@ -25,11 +25,13 @@ class ProcessTheClient(threading.Thread):
 					forward_response = reverseProxy.proses(data)
 					self.destination_sock.connect(forward_response['server'])
 					self.destination_sock.sendall(forward_response['request'].encode())
-					data_balasan = self.destination_sock.recv(8192)
-					self.connection.sendall(data_balasan)
+					while(True):
+						data_balasan = self.destination_sock.recv(32)
+						if(data_balasan == ''):
+							break
+						self.connection.sendall(data_balasan)
 					# logging.warning(data)
 					# logging.warning(data_balasan)
-					break
 				else:
 					break
 			except OSError as e:

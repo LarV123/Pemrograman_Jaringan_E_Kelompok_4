@@ -63,7 +63,7 @@ class HttpServer:
 	def http_get(self,object_address,headers):
 		files = glob('./*')
 		print(files)
-		thedir='./'
+		thedir='.\\\\'
 		if (object_address == '/'):
 			return self.response(200,'OK','Ini Adalah web Server percobaan',dict())
 
@@ -72,8 +72,8 @@ class HttpServer:
 		if (object_address == '/santai'):
 			return self.response(200,'OK','santai saja',dict())
 
-
 		object_address=object_address[1:]
+		print(thedir+object_address)
 		if thedir+object_address not in files:
 			return self.response(404,'Not Found','',{})
 		fp = open(thedir+object_address,'rb') #rb => artinya adalah read dalam bentuk binary
